@@ -1,8 +1,8 @@
 package main
 
 import (
-	"user-management-api/internal/app"
-	"user-management-api/internal/config"
+	"go-shopping-cart/internal/app"
+	"go-shopping-cart/internal/config"
 )
 
 func main() {

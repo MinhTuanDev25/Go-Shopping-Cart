@@ -1,6 +1,6 @@
 package v1service
 
-import "user-management-api/internal/repository"
+import "go-shopping-cart/internal/repository"
 
 type userService struct {
 	repo repository.UserRepository

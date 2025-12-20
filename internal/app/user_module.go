@@ -1,11 +1,11 @@
 package app
 
 import (
-	v1handler "user-management-api/internal/handler/v1"
-	"user-management-api/internal/repository"
-	"user-management-api/internal/routes"
-	v1routes "user-management-api/internal/routes/v1"
-	v1service "user-management-api/internal/service/v1"
+	v1handler "go-shopping-cart/internal/handler/v1"
+	"go-shopping-cart/internal/repository"
+	"go-shopping-cart/internal/routes"
+	v1routes "go-shopping-cart/internal/routes/v1"
+	v1service "go-shopping-cart/internal/service/v1"
 )
 
 type UserModule struct {

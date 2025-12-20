@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"user-management-api/internal/middleware"
+	"go-shopping-cart/internal/middleware"
 
 	"github.com/gin-gonic/gin"
 )

@@ -1,11 +1,11 @@
 package validation
 
 import (
+	"go-shopping-cart/internal/utils"
 	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
-	"user-management-api/internal/utils"
 
 	"github.com/go-playground/validator/v10"
 )

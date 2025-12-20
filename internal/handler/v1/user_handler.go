@@ -1,11 +1,11 @@
 package v1handler
 
 import (
+	v1dto "go-shopping-cart/internal/dto/v1"
+	v1service "go-shopping-cart/internal/service/v1"
+	"go-shopping-cart/internal/utils"
+	"go-shopping-cart/internal/validation"
 	"net/http"
-	v1dto "user-management-api/internal/dto/v1"
-	v1service "user-management-api/internal/service/v1"
-	"user-management-api/internal/utils"
-	"user-management-api/internal/validation"
 
 	"github.com/gin-gonic/gin"
 )

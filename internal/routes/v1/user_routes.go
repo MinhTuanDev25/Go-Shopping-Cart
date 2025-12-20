@@ -1,7 +1,7 @@
 package v1routes
 
 import (
-	v1handler "user-management-api/internal/handler/v1"
+	v1handler "go-shopping-cart/internal/handler/v1"
 
 	"github.com/gin-gonic/gin"
 )

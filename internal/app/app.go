@@ -1,10 +1,10 @@
 package app
 
 import (
+	"go-shopping-cart/internal/config"
+	"go-shopping-cart/internal/routes"
+	"go-shopping-cart/internal/validation"
 	"log"
-	"user-management-api/internal/config"
-	"user-management-api/internal/routes"
-	"user-management-api/internal/validation"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -15,8 +15,8 @@ type Module interface {
 }
 
 type Application struct {
-	config *config.Config
-	router *gin.Engine
+	config  *config.Config
+	router  *gin.Engine
 	modules []Module
 }
 
@@ -36,8 +36,8 @@ func NewApplication(cfg *config.Config) *Application {
 	routes.RegisterRoutes(r, getModulRoutes(modules)...)
 
 	return &Application{
-		config: cfg,
-		router: r,
+		config:  cfg,
+		router:  r,
 		modules: modules,
 	}
 }
