@@ -15,7 +15,7 @@ exportdb:
 
 # Run server
 server:
-	go run .
+	cd cmd/api && go run .
 
 # Generate sqlc
 sqlc:

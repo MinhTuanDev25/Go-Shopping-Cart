@@ -14,9 +14,9 @@ func ApiKeyMiddleware() gin.HandlerFunc {
 	}
 
 	return func(ctx *gin.Context) {
-		apiKey := ctx.GetHeader("X-API-Key")
+		apiKey := ctx.GetHeader("API-KEY")
 		if apiKey == "" {
-			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Missing X-API-Key"})
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Missing API-KEY"})
 			return
 		}
 

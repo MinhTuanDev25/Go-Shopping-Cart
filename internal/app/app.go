@@ -1,10 +1,16 @@
 package app
 
 import (
+	"context"
 	"go-shopping-cart/internal/config"
 	"go-shopping-cart/internal/routes"
 	"go-shopping-cart/internal/validation"
 	"log"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -43,7 +49,38 @@ func NewApplication(cfg *config.Config) *Application {
 }
 
 func (a *Application) Run() error {
-	return a.router.Run(a.config.ServerAddress)
+	srv := &http.Server{
+		Addr:    a.config.ServerAddress,
+		Handler: a.router,
+	}
+
+	//Graceful Shutdown for API
+	quit := make(chan os.Signal, 1)
+	//syscall.SIGINT -> Ctrl+C
+	//syscall.SIGTERM -> kill service
+	//syscall.SIGHUP -> Reload service
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
+
+	go func() {
+		log.Printf("Server is running at %s", a.config.ServerAddress)
+		if err := srv.ListenAndServe(); err != http.ErrServerClosed {
+			log.Fatalf("Failed to start server: %v", err)
+		}
+	}()
+
+	<-quit
+	log.Println("Shutdown signal received ...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatalf("Server forced to shutdown: %v", err)
+	}
+
+	log.Println("Server exited gracefully")
+
+	return nil
 }
 
 func getModulRoutes(modules []Module) []routes.Route {
