@@ -2,9 +2,10 @@ package routes
 
 import (
 	"go-shopping-cart/internal/middleware"
+	"go-shopping-cart/internal/utils"
+	"go-shopping-cart/pkg/logger"
 
 	"github.com/gin-gonic/gin"
-	"github.com/natefinch/lumberjack"
 	"github.com/rs/zerolog"
 )
 
@@ -16,28 +17,16 @@ func RegisterRoutes(r *gin.Engine, routes ...Route) {
 	logPath := "../../internal/logs/http.log"
 	recoveryPath := "../../internal/logs/recovery.log"
 
-	httpLogger := zerolog.New(&lumberjack.Logger{
-		Filename:   logPath,
-		MaxSize:    1, // megabytes
-		MaxBackups: 5,
-		MaxAge:     5, //days
-		Compress:   true,
-	}).With().Timestamp().Logger()
+	httpLogger := newLoggerWithPath(logPath, "info")
 
-	recoveryLogger := zerolog.New(&lumberjack.Logger{
-		Filename:   recoveryPath,
-		MaxSize:    1, // megabytes
-		MaxBackups: 5,
-		MaxAge:     5, //days
-		Compress:   true,
-	}).With().Timestamp().Logger()
+	recoveryLogger := newLoggerWithPath(recoveryPath, "warning")
 
 	r.Use(
+		middleware.RateLimiterMiddleware(),
 		middleware.LoggerMiddleware(httpLogger),
 		middleware.RecoveryMiddleware(recoveryLogger),
 		middleware.ApiKeyMiddleware(),
 		middleware.AuthMiddleware(),
-		middleware.RateLimiterMiddleware(),
 	)
 
 	v1api := r.Group("/api/v1")
@@ -45,4 +34,17 @@ func RegisterRoutes(r *gin.Engine, routes ...Route) {
 	for _, route := range routes {
 		route.Register(v1api)
 	}
+}
+
+func newLoggerWithPath(path string, level string) *zerolog.Logger {
+	config := logger.LoggerConfig{
+		Level:     level,
+		Filename:  path,
+		MaxSize:   1, // megabytes
+		MaxBackup: 5,
+		MaxAge:    5, //days
+		Compress:  true,
+		IsDev:     utils.GetEnv("APP_ENV", "development"),
+	}
+	return logger.NewLogger(config)
 }
