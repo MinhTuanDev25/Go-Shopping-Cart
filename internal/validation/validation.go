@@ -26,7 +26,6 @@ func HandleValidationErrors(err error) gin.H {
 
 		for _, e := range validationError {
 			root := strings.Split(e.Namespace(), ".")[0]
-
 			rawPath := strings.TrimPrefix(e.Namespace(), root+".")
 
 			parts := strings.Split(rawPath, ".")
@@ -46,52 +45,56 @@ func HandleValidationErrors(err error) gin.H {
 
 			switch e.Tag() {
 			case "gt":
-				errors[fieldPath] = fmt.Sprintf("%s phải lớn hơn %s", fieldPath, e.Param())
+				errors[fieldPath] = fmt.Sprintf("%s must be greater than %s", fieldPath, e.Param())
 			case "lt":
-				errors[fieldPath] = fmt.Sprintf("%s phải nhỏ hơn %s", fieldPath, e.Param())
+				errors[fieldPath] = fmt.Sprintf("%s must be less than %s", fieldPath, e.Param())
 			case "gte":
-				errors[fieldPath] = fmt.Sprintf("%s phải lớn hơn hoặc bằng %s", fieldPath, e.Param())
+				errors[fieldPath] = fmt.Sprintf("%s must be greater than or equal to %s", fieldPath, e.Param())
 			case "lte":
-				errors[fieldPath] = fmt.Sprintf("%s phải nhỏ hơn hoặc bằng %s", fieldPath, e.Param())
+				errors[fieldPath] = fmt.Sprintf("%s must be less than or equal to %s", fieldPath, e.Param())
 			case "uuid":
-				errors[fieldPath] = fmt.Sprintf("%s phải là UUID hợp lệ", fieldPath)
+				errors[fieldPath] = fmt.Sprintf("%s must be a valid UUID", fieldPath)
 			case "slug":
-				errors[fieldPath] = fmt.Sprintf("%s chỉ được chứa chữ thường, số, dấu gạch ngang hoặc dấu chấm", fieldPath)
+				errors[fieldPath] = fmt.Sprintf("%s may only contain lowercase letters, numbers, hyphens or dots", fieldPath)
 			case "min":
-				errors[fieldPath] = fmt.Sprintf("%s phải nhiều hơn %s ký tự", fieldPath, e.Param())
+				errors[fieldPath] = fmt.Sprintf("%s must be at least %s characters long", fieldPath, e.Param())
 			case "max":
-				errors[fieldPath] = fmt.Sprintf("%s phải ít hơn %s ký tự", fieldPath, e.Param())
+				errors[fieldPath] = fmt.Sprintf("%s must be at most %s characters long", fieldPath, e.Param())
 			case "min_int":
-				errors[fieldPath] = fmt.Sprintf("%s phải có giá trị lớn hơn %s", fieldPath, e.Param())
+				errors[fieldPath] = fmt.Sprintf("%s must be greater than %s", fieldPath, e.Param())
 			case "max_int":
-				errors[fieldPath] = fmt.Sprintf("%s phải có giá trị bé hơn %s", fieldPath, e.Param())
+				errors[fieldPath] = fmt.Sprintf("%s must be less than %s", fieldPath, e.Param())
 			case "oneof":
-				allowedValues := strings.Join(strings.Split(e.Param(), " "), ",")
-				errors[fieldPath] = fmt.Sprintf("%s phải là một trong các giá trị: %s", fieldPath, allowedValues)
+				allowedValues := strings.Join(strings.Split(e.Param(), " "), ", ")
+				errors[fieldPath] = fmt.Sprintf("%s must be one of the following values: %s", fieldPath, allowedValues)
 			case "required":
-				errors[fieldPath] = fmt.Sprintf("%s là bắt buộc", fieldPath)
+				errors[fieldPath] = fmt.Sprintf("%s is required", fieldPath)
 			case "search":
-				errors[fieldPath] = fmt.Sprintf("%s chỉ được chứa chữ thường, in hoa, số và khoảng trắng", fieldPath)
+				errors[fieldPath] = fmt.Sprintf("%s may only contain letters, numbers, and spaces", fieldPath)
 			case "email":
-				errors[fieldPath] = fmt.Sprintf("%s phải đúng định dạng là email", fieldPath)
+				errors[fieldPath] = fmt.Sprintf("%s must be a valid email address", fieldPath)
 			case "datetime":
-				errors[fieldPath] = fmt.Sprintf("%s phải theo đúng định dạng YYYY-MM-DD", fieldPath)
+				errors[fieldPath] = fmt.Sprintf("%s must follow the format YYYY-MM-DD", fieldPath)
 			case "email_advanced":
-				errors[fieldPath] = fmt.Sprintf("%s này trong danh sách bị cấm", fieldPath)
+				errors[fieldPath] = fmt.Sprintf("%s is in the blocked email list", fieldPath)
 			case "password_strong":
-				errors[fieldPath] = fmt.Sprintf("%s phải ít nhất 8 ký tự bao gồm (chữ thường, chữ in hoa, số và ký tự đặc biệt)", fieldPath)
+				errors[fieldPath] = fmt.Sprintf(
+					"%s must be at least 8 characters and include lowercase, uppercase, number, and special character",
+					fieldPath,
+				)
 			case "file_ext":
-				allowedValues := strings.Join(strings.Split(e.Param(), " "), ",")
-				errors[fieldPath] = fmt.Sprintf("%s chỉ cho phép những file có extension: %s", fieldPath, allowedValues)
+				allowedValues := strings.Join(strings.Split(e.Param(), " "), ", ")
+				errors[fieldPath] = fmt.Sprintf("%s only allows file extensions: %s", fieldPath, allowedValues)
+			default:
+				errors[fieldPath] = fmt.Sprintf("%s is invalid", fieldPath)
 			}
 		}
 
 		return gin.H{"error": errors}
-
 	}
 
 	return gin.H{
-		"error":  "Yêu cầu không hợp lệ",
+		"error":  "Invalid request",
 		"detail": err.Error(),
 	}
 }
