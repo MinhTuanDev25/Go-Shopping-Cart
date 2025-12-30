@@ -55,7 +55,17 @@ func (uh *UserHandler) CreateUser(ctx *gin.Context) {
 		return
 	}
 
-	utils.ResponseSuccess(ctx, http.StatusCreated, "")
+	user := input.MapCreateInputToModel()
+
+	newUser, err := uh.service.CreateUser(ctx, user)
+	if err != nil {
+		utils.ResponseError(ctx, err)
+		return
+	}
+
+	userDTO := v1dto.MapUserToDTO(newUser)
+
+	utils.ResponseSuccess(ctx, http.StatusCreated, userDTO)
 }
 
 func (uh *UserHandler) GetUserByUUID(ctx *gin.Context) {
