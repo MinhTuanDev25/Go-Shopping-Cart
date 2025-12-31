@@ -5,10 +5,13 @@ import (
 	"fmt"
 	"go-shopping-cart/internal/config"
 	"go-shopping-cart/internal/db/sqlc"
+	"go-shopping-cart/internal/utils"
+	"go-shopping-cart/pkg/pgx"
 	"log"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5/tracelog"
 )
 
 var DB sqlc.Querier
@@ -19,6 +22,17 @@ func InitDB() error {
 	conf, err := pgxpool.ParseConfig(connStr)
 	if err != nil {
 		return fmt.Errorf("error parsing DB config: %v", err)
+	}
+
+	logPath := "../../internal/logs/sql.log"
+
+	sqlLogger := utils.NewLoggerWithPath(logPath, "info")
+	conf.ConnConfig.Tracer = &tracelog.TraceLog{
+		Logger: &pgx.PgxZerologTracer{
+			Logger:         *sqlLogger,
+			SlowQueryLimit: 500 * time.Millisecond,
+		},
+		LogLevel: tracelog.LogLevelDebug,
 	}
 
 	conf.MaxConns = 50
