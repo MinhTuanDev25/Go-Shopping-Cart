@@ -1,4 +1,63 @@
-{"level":"warn","method":"POST","path":"/api/v1/users","query":"","client_ip":"::1","user_agent":"PostmanRuntime/7.51.0","referer":"","protocol":"HTTP/1.1","host":"localhost:8080","remote_addr":"[::1]:58639","request_uri":"/api/v1/users","content_length":140,"headers":{"Accept":["*/*"],"Accept-Encoding":["gzip, deflate, br"],"Api-Key":["31f4b96c-cfc2-4d41-9335-6b25d75937b9"],"Cache-Control":["no-cache"],"Connection":["keep-alive"],"Content-Length":["140"],"Content-Type":["application/json"],"Postman-Token":["6e44ccfa-637c-49e0-90e8-d4b6954066ff"],"User-Agent":["PostmanRuntime/7.51.0"]},"request_body":{"age":25,"email":"test.user4@example.com","level":2,"name":"Test User","password":"Ntmt2502@","status":2},"status_code":409,"response_body":{"code":"CONFLICT","error":"Email already exists"},"duration_ms":110,"time":"2025-12-31T12:13:58+07:00","message":"HTTP Request Log"}
-{"level":"warn","method":"POST","path":"/api/v1/users","query":"","client_ip":"::1","user_agent":"PostmanRuntime/7.51.0","referer":"","protocol":"HTTP/1.1","host":"localhost:8080","remote_addr":"[::1]:62021","request_uri":"/api/v1/users","content_length":140,"headers":{"Accept":["*/*"],"Accept-Encoding":["gzip, deflate, br"],"Api-Key":["31f4b96c-cfc2-4d41-9335-6b25d75937b9"],"Cache-Control":["no-cache"],"Connection":["keep-alive"],"Content-Length":["140"],"Content-Type":["application/json"],"Postman-Token":["33b7aa79-e8d2-430e-948e-8131f7507534"],"User-Agent":["PostmanRuntime/7.51.0"]},"request_body":{"age":25,"email":"test.user4@example.com","level":2,"name":"Test User","password":"Ntmt2502@","status":2},"status_code":409,"response_body":{"code":"CONFLICT","error":"Email already exists"},"duration_ms":110,"time":"2025-12-31T12:41:37+07:00","message":"HTTP Request Log"}
-{"level":"warn","method":"POST","path":"/api/v1/users","query":"","client_ip":"::1","user_agent":"PostmanRuntime/7.51.0","referer":"","protocol":"HTTP/1.1","host":"localhost:8080","remote_addr":"[::1]:58758","request_uri":"/api/v1/users","content_length":140,"headers":{"Accept":["*/*"],"Accept-Encoding":["gzip, deflate, br"],"Api-Key":["31f4b96c-cfc2-4d41-9335-6b25d75937b9"],"Cache-Control":["no-cache"],"Connection":["keep-alive"],"Content-Length":["140"],"Content-Type":["application/json"],"Postman-Token":["36fa3383-531b-4e14-a431-074f93591a6c"],"User-Agent":["PostmanRuntime/7.51.0"]},"request_body":{"age":25,"email":"test.user4@example.com","level":2,"name":"Test User","password":"Ntmt2502@","status":2},"status_code":409,"response_body":{"code":"CONFLICT","error":"Email already exists"},"duration_ms":99,"time":"2025-12-31T13:11:16+07:00","message":"HTTP Request Log"}
-{"level":"info","method":"POST","path":"/api/v1/users","query":"","client_ip":"::1","user_agent":"PostmanRuntime/7.51.0","referer":"","protocol":"HTTP/1.1","host":"localhost:8080","remote_addr":"[::1]:56751","request_uri":"/api/v1/users","content_length":140,"headers":{"Accept":["*/*"],"Accept-Encoding":["gzip, deflate, br"],"Api-Key":["31f4b96c-cfc2-4d41-9335-6b25d75937b9"],"Cache-Control":["no-cache"],"Connection":["keep-alive"],"Content-Length":["140"],"Content-Type":["application/json"],"Postman-Token":["8c6b3afd-563f-4a44-82f3-a9a64284732f"],"User-Agent":["PostmanRuntime/7.51.0"]},"request_body":{"age":25,"email":"test.user5@example.com","level":2,"name":"Test User","password":"Ntmt2502@","status":2},"status_code":201,"response_body":{"data":{"age":25,"created_at":"2025-12-31 13:14:52","email_address":"test.user5@example.com","full_name":"Test User","level":"Moderator","status":"Inactive","uuid":"04279013-c128-4ced-a636-d7b6fb19fc9e"},"status":"success"},"duration_ms":112,"time":"2025-12-31T13:14:52+07:00","message":"HTTP Request Log"}
+{
+    "level": "warn",
+    "trace_id": "123",
+    "method": "POST",
+    "path": "/api/v1/users",
+    "query": "",
+    "client_ip": "::1",
+    "user_agent": "PostmanRuntime/7.51.0",
+    "referer": "",
+    "protocol": "HTTP/1.1",
+    "host": "localhost:8080",
+    "remote_addr": "[::1]:49957",
+    "request_uri": "/api/v1/users",
+    "content_length": 140,
+    "headers": {
+        "Accept": [
+            "*/*"
+        ],
+        "Accept-Encoding": [
+            "gzip, deflate, br"
+        ],
+        "Api-Key": [
+            "31f4b96c-cfc2-4d41-9335-6b25d75937b9"
+        ],
+        "Cache-Control": [
+            "no-cache"
+        ],
+        "Connection": [
+            "keep-alive"
+        ],
+        "Content-Length": [
+            "140"
+        ],
+        "Content-Type": [
+            "application/json"
+        ],
+        "Postman-Token": [
+            "2236293c-939e-44cb-bd3b-168f6a8b5196"
+        ],
+        "User-Agent": [
+            "PostmanRuntime/7.51.0"
+        ],
+        "X-Trace-Id": [
+            "123"
+        ]
+    },
+    "request_body": {
+        "age": 25,
+        "email": "test.user5@example.com",
+        "level": 2,
+        "name": "Test User",
+        "password": "Ntmt2502@",
+        "status": 2
+    },
+    "status_code": 409,
+    "response_body": {
+        "code": "CONFLICT",
+        "error": "Email already exists"
+    },
+    "duration_ms": 58,
+    "time": "2026-01-02T18:27:40+07:00",
+    "message": "HTTP Request Log"
+}

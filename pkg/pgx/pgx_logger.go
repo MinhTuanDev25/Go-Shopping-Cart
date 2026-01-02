@@ -3,6 +3,7 @@ package pgx
 import (
 	"context"
 	"fmt"
+	"go-shopping-cart/pkg/logger"
 	"reflect"
 	"regexp"
 	"strings"
@@ -101,6 +102,7 @@ func (t *PgxZerologTracer) Log(ctx context.Context, level tracelog.LogLevel, msg
 	}
 
 	baseLogger := t.Logger.With().
+		Str("trace_id", logger.GetTraceID(ctx)).
 		Dur("duration", duration).
 		Str("sql_original", queryInfo.OriginalSQL).
 		Str("sql_clean", finalSQL).
