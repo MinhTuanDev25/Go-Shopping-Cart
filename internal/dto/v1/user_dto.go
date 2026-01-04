@@ -20,7 +20,7 @@ type UserDTO struct {
 type CreateUserInput struct {
 	Name     string `json:"name" binding:"required"`
 	Email    string `json:"email" binding:"required,email,email_advanced"`
-	Age      int32  `json:"age" binding:"omitempty,gt=0 lt=250"`
+	Age      int32  `json:"age" binding:"omitempty,gt=0"`
 	Password string `json:"password" binding:"required,min=8,password_strong"`
 	Status   int32  `json:"status" binding:"required,oneof=1 2 3"`
 	Level    int32  `json:"level" binding:"required,oneof=1 2 3"`
