@@ -8,6 +8,7 @@ import (
 	"go-shopping-cart/internal/utils"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgconn"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -79,6 +80,48 @@ func (us *userService) UpdateUser(ctx *gin.Context, input sqlc.UpdateUserParams)
 	return userUpdated, nil
 }
 
-func (us *userService) DeleteUser(uuid string) {
-	// TODO: implement
+func (us *userService) DeleteUser(ctx *gin.Context, uuid uuid.UUID) error {
+	context := ctx.Request.Context()
+
+	_, err := us.repo.Delete(context, uuid)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return utils.NewError("user not found or not marked as delete for permenent removal", utils.ErrCodeNotFound)
+		}
+
+		return utils.WrapError(err, "failed to restore user", utils.ErrCodeInternal)
+	}
+
+	return nil
+}
+
+func (us *userService) SoftDeleteUser(ctx *gin.Context, uuid uuid.UUID) (sqlc.User, error) {
+	context := ctx.Request.Context()
+
+	userSoftDelted, err := us.repo.SoftDelete(context, uuid)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return sqlc.User{}, utils.NewError("user not found", utils.ErrCodeNotFound)
+		}
+
+		return sqlc.User{}, utils.WrapError(err, "failed to delete user", utils.ErrCodeInternal)
+	}
+
+	return userSoftDelted, nil
+
+}
+
+func (us *userService) RestoreUser(ctx *gin.Context, uuid uuid.UUID) (sqlc.User, error) {
+	context := ctx.Request.Context()
+
+	userRestored, err := us.repo.Restore(context, uuid)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return sqlc.User{}, utils.NewError("user not found or not marked as delete for restore", utils.ErrCodeNotFound)
+		}
+
+		return sqlc.User{}, utils.WrapError(err, "failed to restore user", utils.ErrCodeInternal)
+	}
+
+	return userRestored, nil
 }

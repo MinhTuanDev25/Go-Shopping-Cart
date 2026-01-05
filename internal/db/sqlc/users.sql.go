@@ -59,6 +59,83 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 	return i, err
 }
 
+const restoreUser = `-- name: RestoreUser :one
+UPDATE users SET
+    user_deleted_at = NULL
+WHERE user_uuid = $1::uuid AND user_deleted_at IS NOT NULL
+RETURNING user_id, user_uuid, user_email, user_password, user_fullname, user_age, user_status, user_level, user_deleted_at, user_created_at, user_updated_at
+`
+
+func (q *Queries) RestoreUser(ctx context.Context, userUuid uuid.UUID) (User, error) {
+	row := q.db.QueryRow(ctx, restoreUser, userUuid)
+	var i User
+	err := row.Scan(
+		&i.UserID,
+		&i.UserUuid,
+		&i.UserEmail,
+		&i.UserPassword,
+		&i.UserFullname,
+		&i.UserAge,
+		&i.UserStatus,
+		&i.UserLevel,
+		&i.UserDeletedAt,
+		&i.UserCreatedAt,
+		&i.UserUpdatedAt,
+	)
+	return i, err
+}
+
+const softDelete = `-- name: SoftDelete :one
+UPDATE users SET
+    user_deleted_at = now()
+WHERE user_uuid = $1::uuid AND user_deleted_at IS NULL
+RETURNING user_id, user_uuid, user_email, user_password, user_fullname, user_age, user_status, user_level, user_deleted_at, user_created_at, user_updated_at
+`
+
+func (q *Queries) SoftDelete(ctx context.Context, userUuid uuid.UUID) (User, error) {
+	row := q.db.QueryRow(ctx, softDelete, userUuid)
+	var i User
+	err := row.Scan(
+		&i.UserID,
+		&i.UserUuid,
+		&i.UserEmail,
+		&i.UserPassword,
+		&i.UserFullname,
+		&i.UserAge,
+		&i.UserStatus,
+		&i.UserLevel,
+		&i.UserDeletedAt,
+		&i.UserCreatedAt,
+		&i.UserUpdatedAt,
+	)
+	return i, err
+}
+
+const trashUser = `-- name: TrashUser :one
+DELETE FROM users
+WHERE user_uuid = $1::uuid AND user_deleted_at IS NOT NULL
+RETURNING user_id, user_uuid, user_email, user_password, user_fullname, user_age, user_status, user_level, user_deleted_at, user_created_at, user_updated_at
+`
+
+func (q *Queries) TrashUser(ctx context.Context, userUuid uuid.UUID) (User, error) {
+	row := q.db.QueryRow(ctx, trashUser, userUuid)
+	var i User
+	err := row.Scan(
+		&i.UserID,
+		&i.UserUuid,
+		&i.UserEmail,
+		&i.UserPassword,
+		&i.UserFullname,
+		&i.UserAge,
+		&i.UserStatus,
+		&i.UserLevel,
+		&i.UserDeletedAt,
+		&i.UserCreatedAt,
+		&i.UserUpdatedAt,
+	)
+	return i, err
+}
+
 const updateUser = `-- name: UpdateUser :one
 UPDATE users SET
     user_password = COALESCE($1, user_password),
@@ -66,7 +143,7 @@ UPDATE users SET
     user_age = COALESCE($3, user_age),
     user_status = COALESCE($4, user_status),
     user_level = COALESCE($5, user_level)
-WHERE user_uuid = $6 AND user_deleted_at IS NULL
+WHERE user_uuid = $6::uuid AND user_deleted_at IS NULL
 RETURNING user_id, user_uuid, user_email, user_password, user_fullname, user_age, user_status, user_level, user_deleted_at, user_created_at, user_updated_at
 `
 

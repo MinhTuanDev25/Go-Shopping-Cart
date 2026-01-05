@@ -17,5 +17,22 @@ UPDATE users SET
     user_age = COALESCE(sqlc.narg(user_age), user_age),
     user_status = COALESCE(sqlc.narg(user_status), user_status),
     user_level = COALESCE(sqlc.narg(user_level), user_level)
-WHERE user_uuid = sqlc.arg(user_uuid) AND user_deleted_at IS NULL
+WHERE user_uuid = sqlc.arg(user_uuid)::uuid AND user_deleted_at IS NULL
+RETURNING *;
+
+-- name: SoftDelete :one
+UPDATE users SET
+    user_deleted_at = now()
+WHERE user_uuid = sqlc.arg(user_uuid)::uuid AND user_deleted_at IS NULL
+RETURNING *;
+
+-- name: RestoreUser :one
+UPDATE users SET
+    user_deleted_at = NULL
+WHERE user_uuid = sqlc.arg(user_uuid)::uuid AND user_deleted_at IS NOT NULL
+RETURNING *;
+
+-- name: TrashUser :one
+DELETE FROM users
+WHERE user_uuid = sqlc.arg(user_uuid)::uuid AND user_deleted_at IS NOT NULL
 RETURNING *;
