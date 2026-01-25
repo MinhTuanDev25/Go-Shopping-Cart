@@ -21,7 +21,7 @@ func NewLoggerWithPath(path string, level string) *zerolog.Logger {
 		Filename:  path,
 		MaxSize:   1, // megabytes
 		MaxBackup: 5,
-		MaxAge:    5, //days
+		MaxAge:    5,
 		Compress:  true,
 		IsDev:     GetEnv("APP_ENV", "development"),
 	}
