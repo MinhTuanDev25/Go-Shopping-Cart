@@ -9,6 +9,7 @@ import (
 
 type UserRepository interface {
 	GetAll(ctx context.Context, search, orderBy, sort string, limit, offset int32) ([]sqlc.User, error)
+	GetAllV2(ctx context.Context, search, orderBy, sort string, limit, offset int32, deleted bool) ([]sqlc.User, error)
 	CountUsers(ctx context.Context, search string) (int64, error)
 	Create(ctx context.Context, arg sqlc.CreateUserParams) (sqlc.User, error)
 	FindByUUID(uuid string)

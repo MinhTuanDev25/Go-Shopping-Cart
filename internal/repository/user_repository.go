@@ -2,6 +2,8 @@ package repository
 
 import (
 	"context"
+	"fmt"
+	"go-shopping-cart/internal/db"
 	"go-shopping-cart/internal/db/sqlc"
 
 	"github.com/google/uuid"
@@ -59,6 +61,69 @@ func (ur *SqlUserRepository) GetAll(ctx context.Context, search, orderBy, sort s
 
 	if err != nil {
 		return []sqlc.User{}, err
+	}
+
+	return users, nil
+}
+
+func (ur *SqlUserRepository) GetAllV2(ctx context.Context, search, orderBy, sort string, limit, offset int32, deleted bool) ([]sqlc.User, error) {
+	query := `SELECT *
+		FROM users
+		WHERE (
+			$1::TEXT IS NULL
+			OR $1::TEXT = ''
+			OR user_email ILIKE '%' || $1 || '%'
+			OR user_fullname ILIKE '%' || $1 || '%'
+		)`
+
+	if deleted {
+		query += " AND user_deleted_at IS NOT NULL"
+	} else {
+		query += " AND user_deleted_at IS NULL"
+	}
+
+	order := "ASC"
+	if sort == "desc" {
+		order = "DESC"
+	}
+
+	switch orderBy {
+	case "user_id", "user_created_at":
+		query += fmt.Sprintf(" ORDER BY %s %s", orderBy, order)
+	default:
+		query += " ORDER BY user_id ASC"
+	}
+
+	query += " LIMIT $2 OFFSET $3 -- name: Get All Version 2"
+
+	rows, err := db.DBPool.Query(ctx, query, search, limit, offset)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	users := []sqlc.User{}
+	for rows.Next() {
+		var i sqlc.User
+		if err := rows.Scan(
+			&i.UserID,
+			&i.UserUuid,
+			&i.UserEmail,
+			&i.UserPassword,
+			&i.UserFullname,
+			&i.UserAge,
+			&i.UserStatus,
+			&i.UserLevel,
+			&i.UserDeletedAt,
+			&i.UserCreatedAt,
+			&i.UserUpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		users = append(users, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
 	}
 
 	return users, nil
