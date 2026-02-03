@@ -22,7 +22,7 @@ func NewUserService(repo repository.UserRepository) UserService {
 	return &userService{repo: repo}
 }
 
-func (us *userService) GetAllUsers(ctx *gin.Context, search, orderBy, sort string, page, limit int32) ([]sqlc.User, int32, error) {
+func (us *userService) GetAllUsers(ctx *gin.Context, search, orderBy, sort string, page, limit int32, deleted bool) ([]sqlc.User, int32, error) {
 	context := ctx.Request.Context()
 
 	if sort == "" {
@@ -48,12 +48,12 @@ func (us *userService) GetAllUsers(ctx *gin.Context, search, orderBy, sort strin
 
 	offset := (page - 1) * limit
 
-	users, err := us.repo.GetAll(context, search, orderBy, sort, limit, offset)
+	users, err := us.repo.GetAllV2(context, search, orderBy, sort, limit, offset, deleted)
 	if err != nil {
 		return []sqlc.User{}, 0, utils.WrapError(err, "Failed to get all users", utils.ErrCodeInternal)
 	}
 
-	total, err := us.repo.CountUsers(context, search)
+	total, err := us.repo.CountUsers(context, search, deleted)
 	if err != nil {
 		return []sqlc.User{}, 0, utils.WrapError(err, "Failed to count users", utils.ErrCodeInternal)
 	}
@@ -160,4 +160,18 @@ func (us *userService) RestoreUser(ctx *gin.Context, uuid uuid.UUID) (sqlc.User,
 	}
 
 	return userRestored, nil
+}
+
+func (us *userService) GetUserByUuid(ctx *gin.Context, uuid uuid.UUID) (sqlc.User, error) {
+	context := ctx.Request.Context()
+
+	user, err := us.repo.GetByUuid(context, uuid)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return sqlc.User{}, utils.NewError("user not found", utils.ErrCodeNotFound)
+		}
+		return sqlc.User{}, utils.WrapError(err, "failed to get user", utils.ErrCodeInternal)
+	}
+
+	return user, nil
 }

@@ -19,11 +19,16 @@ func NewSqlUserRepository(db sqlc.Querier) UserRepository {
 	}
 }
 
-func (ur *SqlUserRepository) CountUsers(ctx context.Context, search string) (int64, error) {
-	total, err := ur.db.CountUsers(ctx, search)
+func (ur *SqlUserRepository) CountUsers(ctx context.Context, search string, deleted bool) (int64, error) {
+	total, err := ur.db.CountUsers(ctx, sqlc.CountUsersParams{
+		Search:  search,
+		Deleted: &deleted,
+	})
+
 	if err != nil {
 		return 0, err
 	}
+
 	return total, nil
 }
 
@@ -138,7 +143,13 @@ func (ur *SqlUserRepository) Create(ctx context.Context, userParams sqlc.CreateU
 	return user, nil
 }
 
-func (ur *SqlUserRepository) FindByUUID(uuid string) {}
+func (ur *SqlUserRepository) GetByUuid(ctx context.Context, uuid uuid.UUID) (sqlc.User, error) {
+	user, err := ur.db.GetUser(ctx, uuid)
+	if err != nil {
+		return sqlc.User{}, err
+	}
+	return user, nil
+}
 
 func (ur *SqlUserRepository) Update(ctx context.Context, input sqlc.UpdateUserParams) (sqlc.User, error) {
 	user, err := ur.db.UpdateUser(ctx, input)
