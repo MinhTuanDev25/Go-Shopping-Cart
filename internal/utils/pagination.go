@@ -1,7 +1,5 @@
 package utils
 
-import "strconv"
-
 type Pagination struct {
 	Page            int32 `json:"page"`
 	Limit           int32 `json:"limit"`
@@ -18,11 +16,7 @@ func NewPagination(page, limit, totalRecords int32) *Pagination {
 	}
 
 	if limit <= 0 {
-		limitStr := GetEnv("LIMIT_RECORDS_PER_PAGE", "10")
-		limitInt, err := strconv.Atoi(limitStr)
-		if err != nil || limitInt <= 0 {
-			limit = 10
-		}
+		limitInt := GetIntEnv("LIMIT_RECORDS_PER_PAGE", 10)
 		limit = int32(limitInt)
 	}
 

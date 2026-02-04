@@ -3,7 +3,6 @@ package middleware
 import (
 	"go-shopping-cart/internal/utils"
 	"net/http"
-	"strconv"
 	"sync"
 	"time"
 
@@ -37,17 +36,8 @@ func getRateLimiter(ip string) *rate.Limiter {
 
 	client, exists := clients[ip]
 	if !exists {
-		requestSecStr := utils.GetEnv("RATE_LIMIT_REQUESTS_SEC", "5")
-		requestBurstStr := utils.GetEnv("RATE_LIMIT_REQUESTS_BURST", "10")
-
-		requestSec, err := strconv.Atoi(requestSecStr)
-		if err != nil {
-			panic("Invalid RATE_LIMIT_REQUESTS_SEC: " + err.Error())
-		}
-		requestBurst, err := strconv.Atoi(requestBurstStr)
-		if err != nil {
-			panic("Invalid RATE_LIMIT_REQUESTS_BURST: " + err.Error())
-		}
+		requestSec := utils.GetIntEnv("RATE_LIMIT_REQUESTS_SEC", 5)
+		requestBurst := utils.GetIntEnv("RATE_LIMIT_REQUESTS_BURST", 10)
 
 		limiter := rate.NewLimiter(rate.Limit(requestSec), requestBurst) // 5 request/sec, brust 10
 		newClient := &Client{limiter, time.Now()}

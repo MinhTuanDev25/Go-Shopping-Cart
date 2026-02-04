@@ -3,27 +3,47 @@ package v1service
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"go-shopping-cart/internal/db/sqlc"
 	"go-shopping-cart/internal/repository"
 	"go-shopping-cart/internal/utils"
-	"strconv"
+	"go-shopping-cart/pkg/cache"
+	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/redis/go-redis/v9"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type userService struct {
-	repo repository.UserRepository
+	repo  repository.UserRepository
+	cache cache.RedisCacheService
 }
 
-func NewUserService(repo repository.UserRepository) UserService {
-	return &userService{repo: repo}
+func NewUserService(repo repository.UserRepository, redisClient *redis.Client) UserService {
+	return &userService{
+		repo:  repo,
+		cache: cache.NewRedisCacheService(redisClient),
+	}
 }
 
 func (us *userService) GetAllUsers(ctx *gin.Context, search, orderBy, sort string, page, limit int32, deleted bool) ([]sqlc.User, int32, error) {
 	context := ctx.Request.Context()
+
+	/** Get Cache Redis **/
+	cacheKey := us.generateCacheKey(search, orderBy, sort, page, limit, deleted)
+
+	var cacheData struct {
+		Users []sqlc.User `json:"users"`
+		Total int32       `json:"total"`
+	}
+
+	if err := us.cache.Get(cacheKey, &cacheData); err == nil && cacheData.Users != nil {
+		return cacheData.Users, cacheData.Total, nil
+	}
 
 	if sort == "" {
 		sort = "asc"
@@ -38,11 +58,7 @@ func (us *userService) GetAllUsers(ctx *gin.Context, search, orderBy, sort strin
 	}
 
 	if limit <= 0 {
-		limitStr := utils.GetEnv("LIMIT_RECORDS_PER_PAGE", "10")
-		limitInt, err := strconv.Atoi(limitStr)
-		if err != nil || limitInt <= 0 {
-			limit = 10
-		}
+		limitInt := utils.GetIntEnv("LIMIT_RECORDS_PER_PAGE", 10)
 		limit = int32(limitInt)
 	}
 
@@ -57,6 +73,17 @@ func (us *userService) GetAllUsers(ctx *gin.Context, search, orderBy, sort strin
 	if err != nil {
 		return []sqlc.User{}, 0, utils.WrapError(err, "Failed to count users", utils.ErrCodeInternal)
 	}
+
+	// Create cache data
+	cacheData = struct {
+		Users []sqlc.User `json:"users"`
+		Total int32       `json:"total"`
+	}{
+		Users: users,
+		Total: int32(total),
+	}
+
+	us.cache.Set(cacheKey, cacheData, 10*time.Minute)
 
 	return users, int32(total), nil
 }
@@ -80,6 +107,11 @@ func (us *userService) CreateUser(ctx *gin.Context, input sqlc.CreateUserParams)
 		}
 
 		return sqlc.User{}, utils.WrapError(err, "Failed to create user", utils.ErrCodeInternal)
+	}
+
+	// Clear cache redis
+	if err := us.cache.Clear("users:*"); err != nil {
+		return sqlc.User{}, utils.WrapError(err, "Failed to clear cache", utils.ErrCodeInternal)
 	}
 
 	return user, nil
@@ -113,6 +145,11 @@ func (us *userService) UpdateUser(ctx *gin.Context, input sqlc.UpdateUserParams)
 		return sqlc.User{}, utils.WrapError(err, "Failed to update user", utils.ErrCodeInternal)
 	}
 
+	// Clear cache redis
+	if err := us.cache.Clear("users:*"); err != nil {
+		return sqlc.User{}, utils.WrapError(err, "Failed to clear cache", utils.ErrCodeInternal)
+	}
+
 	return userUpdated, nil
 }
 
@@ -128,6 +165,11 @@ func (us *userService) DeleteUser(ctx *gin.Context, uuid uuid.UUID) error {
 		return utils.WrapError(err, "failed to restore user", utils.ErrCodeInternal)
 	}
 
+	// Clear cache redis
+	if err := us.cache.Clear("users:*"); err != nil {
+		return utils.WrapError(err, "Failed to clear cache", utils.ErrCodeInternal)
+	}
+
 	return nil
 }
 
@@ -141,6 +183,11 @@ func (us *userService) SoftDeleteUser(ctx *gin.Context, uuid uuid.UUID) (sqlc.Us
 		}
 
 		return sqlc.User{}, utils.WrapError(err, "failed to delete user", utils.ErrCodeInternal)
+	}
+
+	// Clear cache redis
+	if err := us.cache.Clear("users:*"); err != nil {
+		return sqlc.User{}, utils.WrapError(err, "Failed to clear cache", utils.ErrCodeInternal)
 	}
 
 	return userSoftDelted, nil
@@ -159,6 +206,11 @@ func (us *userService) RestoreUser(ctx *gin.Context, uuid uuid.UUID) (sqlc.User,
 		return sqlc.User{}, utils.WrapError(err, "failed to restore user", utils.ErrCodeInternal)
 	}
 
+	// Clear cache redis
+	if err := us.cache.Clear("users:*"); err != nil {
+		return sqlc.User{}, utils.WrapError(err, "Failed to clear cache", utils.ErrCodeInternal)
+	}
+
 	return userRestored, nil
 }
 
@@ -174,4 +226,23 @@ func (us *userService) GetUserByUuid(ctx *gin.Context, uuid uuid.UUID) (sqlc.Use
 	}
 
 	return user, nil
+}
+
+func (us *userService) generateCacheKey(search, orderBy, sort string, page, limit int32, deleted bool) string {
+	search = strings.TrimSpace(search)
+	if search == "" {
+		search = "none"
+	}
+
+	orderBy = strings.TrimSpace(orderBy)
+	if orderBy == "" {
+		orderBy = "user_created_at"
+	}
+
+	sort = strings.ToLower(strings.TrimSpace(sort))
+	if sort == "" {
+		sort = "desc"
+	}
+
+	return fmt.Sprintf("users:%s:%s:%s:%d:%d:%t", search, orderBy, sort, page, limit, deleted)
 }
